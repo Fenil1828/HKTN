@@ -20,23 +20,84 @@ export function SampleGenerator({ onGenerate, onManualEntry }) {
     location: ''
   });
 
+  const generateDiverseUsername = () => {
+    const firstNames = [
+      "alex", "bailey", "casey", "diana", "emma", "frank", "grace", "henry",
+      "isla", "james", "kate", "logan", "maya", "noah", "oliver", "patricia",
+      "quinn", "rachel", "sam", "taylor", "una", "victor", "waylon", "xavier",
+      "yara", "zach", "amber", "blake", "cameron", "drew", "eden", "frost"
+    ];
+
+    const lastNames = [
+      "anderson", "beta", "carter", "davies", "edwards", "fisher", "garcia",
+      "hall", "irvine", "jackson", "kelly", "lewis", "miller", "nelson", "owen",
+      "parker", "quinn", "robinson", "smith", "taylor", "unity", "vaughn",
+      "walker", "xavier", "young", "zhang", "martinez", "johnson", "williams"
+    ];
+
+    const domains = ["", "_real", "_official", "_pro", "_news", "_daily", "_hub", "_zone", 
+                     "_world", "_tv", "_media", "_ninja", "_rocks", "_codes", "_labs"];
+
+    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const domain = domains[Math.floor(Math.random() * domains.length)];
+
+    return `${firstName}${lastName}${domain}`;
+  };
+
   const handleBulkGenerate = async (count) => {
     const accounts = [];
     for (let i = 0; i < count; i++) {
-      const is_bot = Math.random() < 0.4;
-      const followers = is_bot ? Math.floor(Math.random() * 50) : Math.floor(Math.random() * 2000) + 50;
-      const following = is_bot ? Math.floor(Math.random() * 9000) + 1000 : Math.floor(Math.random() * 950) + 50;
+      const is_bot = Math.random() < 0.3; // 30% bots, 70% real
+      
+      let followers, following, posts, age, bio, location, verified;
+
+      if (is_bot) {
+        // 🤖 Bot Pattern: Very new, massive following, very high posts
+        followers = Math.floor(Math.random() * 100) + 2;
+        following = Math.floor(Math.random() * 12000) + 3000; // 3000-15000
+        posts = Math.floor(Math.random() * 52000) + 8000; // 8000-60000
+        age = Math.floor(Math.random() * 60) + 1; // 1-60 days
+        bio = ['Follow for prizes!', 'DM for deals', 'Click link in bio', 'Free money!', 'Earn $$'][Math.floor(Math.random() * 5)];
+        location = '';
+        verified = false;
+      } else {
+        // 👤 Real user: Older account, balanced followers/following
+        age = Math.floor(Math.random() * 3450) + 200; // 200-3650 days
+        followers = Math.floor(Math.random() * 14920) + 80; // 80-15000
+        
+        // Real accounts have realistic ratios
+        if (followers > 5000) {
+          following = Math.floor(Math.random() * (followers * 0.3 - 500)) + 500; // 500 to followers*0.3
+        } else {
+          following = Math.floor(Math.random() * (followers - 50)) + 50; // 50 to followers
+        }
+        
+        posts = Math.floor(Math.random() * 5800) + 200; // 200-6000
+        bio = [
+          'Software developer | Open source enthusiast',
+          'Product manager | Always learning',
+          'Digital marketer | Coffee addict ☕',
+          'Photographer | Travel lover 📸',
+          'Writer | Tech journalist',
+          'Designer | Creative thinker',
+          'Data scientist | AI enthusiast',
+          'Entrepreneur | Startup founder'
+        ][Math.floor(Math.random() * 8)];
+        location = ['San Francisco, CA', 'New York, NY', 'London, UK', 'Tokyo, Japan', 'Toronto, Canada', 'Berlin, Germany', 'Singapore', 'Sydney, Australia'][Math.floor(Math.random() * 8)];
+        verified = followers > 10000 ? Math.random() < 0.08 : Math.random() < 0.02;
+      }
 
       accounts.push({
-        username: is_bot ? `bot_${i}_${Date.now()}` : `user_${i}_${Date.now()}`,
+        username: this.generateDiverseUsername(),
         followers_count: followers,
         friends_count: following,
-        statuses_count: is_bot ? Math.floor(Math.random() * 45000) + 5000 : Math.floor(Math.random() * 4900) + 100,
-        account_age_days: is_bot ? Math.floor(Math.random() * 89) + 1 : Math.floor(Math.random() * 3285) + 365,
-        verified: !is_bot && Math.random() < 0.05,
-        has_profile_image: is_bot ? Math.random() < 0.4 : Math.random() < 0.9,
-        bio: is_bot ? 'Follow for deals!' : 'Tech enthusiast | Coffee lover',
-        location: is_bot ? '' : ['New York', 'San Francisco', 'London'][Math.floor(Math.random() * 3)]
+        statuses_count: posts,
+        account_age_days: age,
+        verified: verified,
+        has_profile_image: !is_bot ? Math.random() < 0.95 : Math.random() < 0.4,
+        bio: bio,
+        location: location
       });
     }
 
