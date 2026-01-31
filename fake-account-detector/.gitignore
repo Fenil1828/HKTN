@@ -50,3 +50,7 @@ Thumbs.db
 
 # Environment variables
 .env
+
+# Test files
+test_backend_import.py
+test_detailed.py

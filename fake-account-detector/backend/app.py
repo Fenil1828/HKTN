@@ -12,9 +12,8 @@ import time
 # Add backend to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Import classes needed for pickle loading
-from model_training import FakeAccountDetector
-from feature_extraction import FeatureExtractor
+# Note: We don't need to import the classes here
+# joblib will handle unpickling the model with its embedded class definitions
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -71,19 +70,29 @@ def load_detector():
     global detector
     if os.path.exists(MODEL_PATH):
         try:
+            # Import classes only when loading the model (lazy import)
+            # This prevents slow sklearn imports from blocking app startup
+            print("Loading model classes...")
+            from model_training import FakeAccountDetector
+            from feature_extraction import FeatureExtractor
+            
+            print(f"Loading model from {MODEL_PATH}...")
             detector = joblib.load(MODEL_PATH)
-            print(f"Model loaded from {MODEL_PATH}")
+            print(f"✓ Model loaded successfully from {MODEL_PATH}")
             return True
         except Exception as e:
-            print(f"Error loading model: {e}")
+            print(f"❌ Error loading model: {e}")
+            import traceback
+            traceback.print_exc()
             return False
     else:
-        print(f"Model not found at {MODEL_PATH}")
+        print(f"⚠️  Model not found at {MODEL_PATH}")
         print("   Please train the model first: python backend/model_training.py")
         return False
 
-# Try to load model on startup
-load_detector()
+# Don't load model on startup - it will be loaded on first request
+# This allows the Flask app to start quickly
+# load_detector()
 
 @app.route('/')
 def home():
@@ -126,6 +135,11 @@ def get_metrics():
 def analyze_account():
     """Analyze a single social media account"""
     try:
+        # Lazy load model on first request
+        if detector is None:
+            print("Model not loaded yet, loading now...")
+            load_detector()
+        
         if detector is None:
             return jsonify({
                 'error': 'Model not loaded',
